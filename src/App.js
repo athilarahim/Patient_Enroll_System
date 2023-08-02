@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import './App.css';
 import Button from '@mui/material/Button';
@@ -14,7 +14,15 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+//import SendIcon from '@mui/icons-material/Send';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Modal from '@mui/material/Modal';
 import firestore from "./firebase";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
+
 
 
 function App() {
@@ -24,12 +32,29 @@ function App() {
   const [gender, setGender] = useState('');
   const [phone,setPhone] = useState();
 
-  const [patientdata,setPatientdata] = useState('');
+  const [patientdata,setPatientdata] = useState();
+  const [allpatients,setAllPatientdata] = useState('');
   const [opsearch,setOpsearch] = useState('');
   const [namesearch,setNamesearch] = useState('');
   const [phonesearch,setPhonesearch] = useState('');
+  const [open, setOpen] = useState(false);
+
+  
 
 
+  useEffect(() => {
+   firestore
+  .collection('op_no')
+  .get()
+  .then((querySnapshot) => {
+    const documents = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      data: doc.data(),
+    }));
+    setAllPatientdata( documents );
+  });
+ 
+}, [])
 
   const AddPatients = async (e) =>{
        e.preventDefault();
@@ -67,7 +92,7 @@ function App() {
 
           const results = [];
           querySnapshot.forEach((doc) => {
-          results.push(doc.data());
+          results.push({data:doc.data(),id:doc.id});
         });
 
         setPatientdata(results);
@@ -87,7 +112,8 @@ function App() {
 
         const results = [];
         querySnapshot.forEach((doc) => {
-        results.push(doc.data());
+          console.log(doc.id);
+        results.push({data:doc.data(),id:doc.id});
       });
 
       setPatientdata(results);
@@ -105,7 +131,7 @@ function App() {
 
         const results = [];
         querySnapshot.forEach((doc) => {
-        results.push(doc.data());
+        results.push({data:doc.data(),id:doc.id});
       });
 
       setPatientdata(results);
@@ -114,9 +140,24 @@ function App() {
     }
   }
 
+  const deleteDocument = async (documentId) =>{
+    //try{
+   await firestore
+    .collection('op_no')
+    .doc(documentId)
+    .delete()
+    .then(() => {
+      console.log('Document successfully deleted!',documentId);
+    })
+    .catch('error deleting document')
+  
+  }
+  
+
 
   return (
     <div className="App">
+      <ToastContainer />
       <h2 className="heading">Pro Dent Care, Erattupetta</h2>
       <div className="row">
       <div className="column-one">
@@ -155,6 +196,62 @@ function App() {
       </Paper>
       </div>
       <div className="column-two">
+        <div className="viewall-patients">
+        {/* <Button variant="contained" endIcon={<SendIcon />} onClick={()=>setOpen(true)}>
+          View all patients
+        </Button> */}
+        </div>
+        <div className="modal">
+        <Modal className="modalOverlay"
+        
+        open={open}
+        onClose={()=>setOpen(false)}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description">
+        <Box className="modal-box">
+          <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+          <div className="content-display">
+      {allpatients ? (
+        <TableContainer component={Paper}  >
+        <Table sx={{ minWidth: 680 }} aria-label="simple table">
+        <TextField value={namesearch} onChange={(e)=>setNamesearch(e.target.value)} id="filled-basic" label="Search Name" variant="outlined" />
+        &nbsp;<Button sx={{ minHeight:56 }} onClick={searchByname} variant="outlined">Go</Button>
+          <TableHead>
+            <TableRow>
+              <TableCell>OP Number</TableCell>
+              <TableCell align="right">Patient Name</TableCell>
+              <TableCell align="right">Age</TableCell>
+              <TableCell align="right">Gender</TableCell>
+              <TableCell align="right">Phone</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody className="modalcontent">
+            {allpatients.map((row) => (
+              <TableRow
+                key={row.id}
+                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+              >
+                <TableCell component="th" scope="row">
+                  {row.data.op_no}
+                </TableCell>
+                <TableCell align="right">{row.data.name.toUpperCase()}</TableCell>
+                <TableCell align="right">{row.data.age}</TableCell>
+                <TableCell align="right">{row.data.gender}</TableCell>
+                <TableCell align="right">{row.data.phone}</TableCell>
+    
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      ) : (
+        null
+      )}
+      </div>
+          </Typography>
+        </Box>
+      </Modal>
+        </div>
         <div className="searching">
       <TextField value={opsearch} onChange={(e)=>setOpsearch(e.target.value)} id="filled-basic" label="Search OP" variant="filled" />
       <Button onClick={searchByop} variant="outlined">Go</Button> &nbsp;
@@ -177,21 +274,29 @@ function App() {
               <TableCell align="right">Age</TableCell>
               <TableCell align="right">Gender</TableCell>
               <TableCell align="right">Phone</TableCell>
+              <TableCell align="right"></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {patientdata.map((row) => (
+              
               <TableRow
-                key={row.op_no}
+                key={row.id}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
+                
                 <TableCell component="th" scope="row">
-                  {row.op_no}
+                  {row.data.op_no}
                 </TableCell>
-                <TableCell align="right">{row.name.toUpperCase()}</TableCell>
-                <TableCell align="right">{row.age}</TableCell>
-                <TableCell align="right">{row.gender}</TableCell>
-                <TableCell align="right">{row.phone}</TableCell>
+                <TableCell align="right">{row.data.name.toUpperCase()}</TableCell>
+                <TableCell align="right">{row.data.age}</TableCell>
+                <TableCell align="right">{row.data.gender}</TableCell>
+                <TableCell align="right">{row.data.phone}</TableCell>
+      <TableCell align="right"><Button onClick={()=>deleteDocument(row.id).then(toast.success("Deleted successfully!"),setTimeout(() => 
+      {
+        window.location.reload();
+       }, 1000))} variant="outlined">Delete</Button></TableCell>
+
               </TableRow>
             ))}
           </TableBody>
@@ -206,7 +311,7 @@ function App() {
 
     </div>
   );
-  }
+      }
 
 export default App;
 
