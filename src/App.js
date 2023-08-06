@@ -18,10 +18,11 @@ import TableRow from '@mui/material/TableRow';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
-import firestore from "./firebase";
+import firebaseExports from "./firebase";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
+import { grey } from "@mui/material/colors";
 
 
 
@@ -39,7 +40,7 @@ function App() {
   const [phonesearch,setPhonesearch] = useState('');
   const [open, setOpen] = useState(false);
 
-  
+  const { firebase, firestore } = firebaseExports;
 
 
   useEffect(() => {
@@ -161,22 +162,22 @@ function App() {
       <h2 className="heading">Pro Dent Care, Erattupetta</h2>
       <div className="row">
       <div className="column-one">
-      <Paper className="maincard" elevation={3} >
+      <Paper className="maincard" elevation={3}>
         <h2 style={{color:"grey"}}>Add New Patient</h2>
-        <TextField fullWidth id="filled-basic" label="OP Number" variant="filled" inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }} 
+        <TextField size="small" sx={{marginBottom: 0.3}} fullWidth id="filled-basic" label="OP Number" variant="filled" inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }} 
         value={op || ''} onChange={(e)=>setOP(e.target.value)} /><br/>
 
-        <TextField fullWidth id="filled-basic" label="Name" variant="filled" 
+        <TextField size="small" sx={{marginBottom: 0.3}} fullWidth id="filled-basic" label="Name" variant="filled" 
         value={name || ''} onChange={(e)=>setName(e.target.value)} /><br/>
-        <TextField fullWidth id="filled-basic" label="Phone Number" variant="filled" inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+        <TextField size="small" sx={{marginBottom: 0.4}} fullWidth id="filled-basic" label="Phone Number" variant="filled" inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
         value={phone || ''} onChange={(e)=>setPhone(e.target.value)}/>
         <br/>
         <div className="ageandgender">
-        <TextField fullWidth id="filled-basic" label="Age" variant="filled" inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }} 
+        <TextField size="small" fullWidth id="filled-basic" label="Age" variant="filled" inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }} 
         value={age || ''} onChange={(e)=>setAge(e.target.value)} /> &nbsp;
-        <FormControl variant="filled" sx={{ minWidth: 200 }}>
-        <InputLabel id="demo-simple-select-standard-label">Gender</InputLabel>
-        <Select
+        <FormControl sx={{minWidth: 200, maxHeight: 100}} variant="filled" >
+        <InputLabel  id="demo-simple-select-standard-label">Gender</InputLabel>
+        <Select 
           labelId="demo-simple-select-standard-label"
           id="demo-simple-select-standard"
           value={gender || ''}

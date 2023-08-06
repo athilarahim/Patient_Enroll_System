@@ -1,5 +1,6 @@
 import firebase from 'firebase/app';
 import 'firebase/firestore';
+import 'firebase/auth'
 
 // Add your Firebase configuration here
 const firebaseConfig = {
@@ -18,4 +19,7 @@ firebase.initializeApp(firebaseConfig);
 // Create a Firestore reference
 const firestore = firebase.firestore();
 
-export default firestore;
+const firebaseExports = {firebase,firestore}
+
+export default firebaseExports;
+
