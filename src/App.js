@@ -22,7 +22,9 @@ import firebaseExports from "./firebase";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
-import { grey } from "@mui/material/colors";
+import firebase from "firebase/app";
+import "firebase/auth";
+import { useNavigate } from 'react-router-dom';
 
 
 
@@ -40,7 +42,7 @@ function App() {
   const [phonesearch,setPhonesearch] = useState('');
   const [open, setOpen] = useState(false);
 
-  const { firebase, firestore } = firebaseExports;
+  const { firebaseConf, firestore } = firebaseExports;
 
 
   useEffect(() => {
@@ -56,6 +58,21 @@ function App() {
   });
  
 }, [])
+
+///////////logout///////////////
+const navigate = useNavigate();
+  
+  const handleLogout = async () => {
+    try {
+      await firebase.auth().signOut();
+      console.log('User logged out successfully');
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing out: ', error);
+    }
+  };
+
+  ////////////logout/////////////
 
   const AddPatients = async (e) =>{
        e.preventDefault();
@@ -158,6 +175,7 @@ function App() {
 
   return (
     <div className="App">
+    <Button sx={{margin: 2}} variant="contained" onClick={handleLogout}>Logout</Button>
       <ToastContainer />
       <h2 className="heading">Pro Dent Care, Erattupetta</h2>
       <div className="row">
@@ -175,7 +193,7 @@ function App() {
         <div className="ageandgender">
         <TextField size="small" fullWidth id="filled-basic" label="Age" variant="filled" inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }} 
         value={age || ''} onChange={(e)=>setAge(e.target.value)} /> &nbsp;
-        <FormControl sx={{minWidth: 200, maxHeight: 100}} variant="filled" >
+        <FormControl sx={{minWidth: 200}} variant="filled" >
         <InputLabel  id="demo-simple-select-standard-label">Gender</InputLabel>
         <Select 
           labelId="demo-simple-select-standard-label"
