@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "dental-practice-management"
-  }
+    "default": "dental-practice-management",
+    "dental-practice-management": "dental-practice-management"
+  },
+  "targets": {},
+  "etags": {}
 }

@@ -41,6 +41,7 @@ function App() {
   const [namesearch,setNamesearch] = useState('');
   const [phonesearch,setPhonesearch] = useState('');
   const [open, setOpen] = useState(false);
+  const [errortext,setErrortext] = useState("");
 
   const { firebaseConf, firestore } = firebaseExports;
 
@@ -76,7 +77,11 @@ const navigate = useNavigate();
 
   const AddPatients = async (e) =>{
        e.preventDefault();
-
+       if(!op || !name || !age || !gender || !phone){
+        setErrortext("Please enter all the fields!")
+       }
+       else{ 
+        setErrortext("");
        try{
        await firestore.collection('op_no').add({
         op_no: op,
@@ -97,7 +102,7 @@ const navigate = useNavigate();
        setGender('');
        setPhone('');
 
-      
+       }
   }
 
   const searchByop = async () =>{
@@ -209,7 +214,7 @@ const navigate = useNavigate();
       </FormControl>
       </div>
       <br/>
-
+      <p style={{color: "red"}}>{errortext}</p>
       <Button variant="contained" onClick={AddPatients}>Add Patient</Button>
     
       </Paper>
@@ -311,10 +316,7 @@ const navigate = useNavigate();
                 <TableCell align="right">{row.data.age}</TableCell>
                 <TableCell align="right">{row.data.gender}</TableCell>
                 <TableCell align="right">{row.data.phone}</TableCell>
-      <TableCell align="right"><Button onClick={()=>deleteDocument(row.id).then(toast.success("Deleted successfully!"),setTimeout(() => 
-      {
-        window.location.reload();
-       }, 1000))} variant="outlined">Delete</Button></TableCell>
+      <TableCell align="right"><Button onClick={()=>deleteDocument(row.id).then(toast.success("Deleted successfully!"))} variant="outlined">Delete</Button></TableCell>
 
               </TableRow>
             ))}
