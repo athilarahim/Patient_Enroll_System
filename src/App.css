@@ -6,9 +6,9 @@ body{
 }
 .maincard{
     padding: 40px;
-    width: 78%;
-    
+    width: 78%;    
 }
+
 .row{
     width: 100%;
     display: flex;
@@ -20,6 +20,8 @@ text-align: center;
 width: 37%;
 
 }
+
+  
 .column-two{
     padding: 20px;
     width: 63%;
@@ -68,6 +70,72 @@ width: 37%;
 .modalOverlay{
     position: fixed;
 }
+
+
+@media only screen and (max-width: 500px) {
+    .row{
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .column-one{
+        padding: 5px;
+        width: 100%;
+    }
+    .column-two{
+        padding: 5px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .searching{
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ageandgender{
+        display: flex;
+        flex-direction: column;
+    }
+
+  }
+
+  /* @media (min-width: 768px) and (max-width: 900px){
+    .row{
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .column-one{
+        padding: 20px;
+        width: 100%;
+    }
+    .column-two{
+        padding: 20px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .searchtext{
+        width: 40%;
+        
+    }
+    .searchbutton{
+        width: 30px;
+    }
+    .searching{
+        padding: 5px;
+        margin: 5px;
+        display: flex;
+        flex-direction: row;
+    }
+    .ageandgender{
+        display: flex;
+        flex-direction: column;
+    }
+   
+  } */
 
 
 

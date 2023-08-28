@@ -22,7 +22,10 @@ import firebaseExports from "./firebase";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
-import { grey } from "@mui/material/colors";
+import firebase from "firebase/app";
+import "firebase/auth";
+import { useNavigate } from 'react-router-dom';
+
 
 
 
@@ -39,13 +42,14 @@ function App() {
   const [namesearch,setNamesearch] = useState('');
   const [phonesearch,setPhonesearch] = useState('');
   const [open, setOpen] = useState(false);
+  const [errortext,setErrortext] = useState("");
 
-  const { firebase, firestore } = firebaseExports;
+  const { firebaseConf, firestore } = firebaseExports;
 
 
   useEffect(() => {
    firestore
-  .collection('op_no')
+  .collection('patientlist')
   .get()
   .then((querySnapshot) => {
     const documents = querySnapshot.docs.map((doc) => ({
@@ -57,11 +61,30 @@ function App() {
  
 }, [])
 
+
+///////////logout///////////////
+const navigate = useNavigate();
+  
+  const handleLogout = async () => {
+    try {
+      await firebase.auth().signOut();
+      console.log('User logged out successfully');
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing out: ', error);
+    }
+  };
+
+  ////////////logout/////////////
   const AddPatients = async (e) =>{
        e.preventDefault();
-
+       if(!op || !name || !age || !gender || !phone){
+        setErrortext("Please enter all the fields!")
+       }
+       else{ 
+        setErrortext("");
        try{
-       await firestore.collection('op_no').add({
+       await firestore.collection('patientlist').add({
         op_no: op,
         name: name.toLowerCase(),
         age: age,
@@ -79,15 +102,14 @@ function App() {
        setAge('');
        setGender('');
        setPhone('');
-
-      
+      }      
   }
 
   const searchByop = async () =>{
   
       try {
         const querySnapshot = await firestore
-          .collection('op_no')
+          .collection('patientlist')
           .where('op_no', '==' ,opsearch)
           .get();
 
@@ -106,14 +128,14 @@ function App() {
   const searchByname = async () =>{
     try {
       const querySnapshot = await firestore
-        .collection('op_no')
+        .collection('patientlist')
         .where('name', '>=', namesearch.toLowerCase())
         .where('name', '<=', namesearch.toLowerCase() + '\uf8ff')
         .get();
 
         const results = [];
         querySnapshot.forEach((doc) => {
-          console.log(doc.id);
+          //console.log(doc.id);
         results.push({data:doc.data(),id:doc.id});
       });
 
@@ -126,7 +148,7 @@ function App() {
   const searchByphone = async () =>{
     try {
       const querySnapshot = await firestore
-        .collection('op_no')
+        .collection('patientlist')
         .where('phone', '==' ,phonesearch)
         .get();
 
@@ -142,9 +164,8 @@ function App() {
   }
 
   const deleteDocument = async (documentId) =>{
-    //try{
    await firestore
-    .collection('op_no')
+    .collection('patientlist')
     .doc(documentId)
     .delete()
     .then(() => {
@@ -158,24 +179,25 @@ function App() {
 
   return (
     <div className="App">
+    <Button sx={{margin: 2}} variant="contained" onClick={handleLogout}>Logout</Button>
       <ToastContainer />
       <h2 className="heading">Pro Dent Care, Erattupetta</h2>
       <div className="row">
       <div className="column-one">
-      <Paper className="maincard" elevation={3}>
+       <Paper className="maincard" elevation={3}>
         <h2 style={{color:"grey"}}>Add New Patient</h2>
         <TextField size="small" sx={{marginBottom: 0.3}} fullWidth id="filled-basic" label="OP Number" variant="filled" inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }} 
-        value={op || ''} onChange={(e)=>setOP(e.target.value)} /><br/>
+        value={op || ''} onChange={(e)=>setOP(e.target.value)}/><br/>
 
         <TextField size="small" sx={{marginBottom: 0.3}} fullWidth id="filled-basic" label="Name" variant="filled" 
-        value={name || ''} onChange={(e)=>setName(e.target.value)} /><br/>
+        value={name || ''} onChange={(e)=>setName(e.target.value)}/><br/>
         <TextField size="small" sx={{marginBottom: 0.4}} fullWidth id="filled-basic" label="Phone Number" variant="filled" inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
         value={phone || ''} onChange={(e)=>setPhone(e.target.value)}/>
         <br/>
         <div className="ageandgender">
-        <TextField size="small" fullWidth id="filled-basic" label="Age" variant="filled" inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }} 
-        value={age || ''} onChange={(e)=>setAge(e.target.value)} /> &nbsp;
-        <FormControl sx={{minWidth: 200, maxHeight: 100}} variant="filled" >
+        <TextField size="small" id="filled-basic" label="Age" variant="filled" inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }} 
+        value={age || ''} onChange={(e)=>setAge(e.target.value)}/> &nbsp;
+        <FormControl sx={{minWidth: 200}} size="small" variant="filled">
         <InputLabel  id="demo-simple-select-standard-label">Gender</InputLabel>
         <Select 
           labelId="demo-simple-select-standard-label"
@@ -183,18 +205,19 @@ function App() {
           value={gender || ''}
           onChange={(e)=>setGender(e.target.value)}
           label="Gender"
+          
         >
         
           <MenuItem value="Male">Male</MenuItem>
           <MenuItem value="Female">Female</MenuItem>
         </Select>
-      </FormControl>
-      </div>
-      <br/>
-
-      <Button variant="contained" onClick={AddPatients}>Add Patient</Button>
+       </FormControl>
+       </div>
+       <br/>
+       <p style={{color: "red"}}>{errortext}</p>
+       <Button variant="contained" onClick={AddPatients}>Add Patient</Button>
     
-      </Paper>
+       </Paper>
       </div>
       <div className="column-two">
         <div className="viewall-patients">
@@ -254,6 +277,7 @@ function App() {
       </Modal>
         </div>
         <div className="searching">
+
       <TextField value={opsearch} onChange={(e)=>setOpsearch(e.target.value)} id="filled-basic" label="Search OP" variant="filled" />
       <Button onClick={searchByop} variant="outlined">Go</Button> &nbsp;
 
@@ -293,10 +317,7 @@ function App() {
                 <TableCell align="right">{row.data.age}</TableCell>
                 <TableCell align="right">{row.data.gender}</TableCell>
                 <TableCell align="right">{row.data.phone}</TableCell>
-      <TableCell align="right"><Button onClick={()=>deleteDocument(row.id).then(toast.success("Deleted successfully!"),setTimeout(() => 
-      {
-        window.location.reload();
-       }, 1000))} variant="outlined">Delete</Button></TableCell>
+      <TableCell align="right"><Button onClick={()=>deleteDocument(row.id).then(toast.success("Deleted successfully!"))} variant="outlined">Delete</Button></TableCell>
 
               </TableRow>
             ))}

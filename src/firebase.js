@@ -4,13 +4,13 @@ import 'firebase/auth'
 
 // Add your Firebase configuration here
 const firebaseConfig = {
-  apiKey: "AIzaSyDo-4dzZlR7H2e9qZXFfXuP4LtsuToAt-s",
-  authDomain: "dental-practice-management.firebaseapp.com",
-  projectId: 'dental-practice-management',
-  storageBucket: "dental-practice-management.appspot.com",
-  messagingSenderId: "1048076810490",
-  appId: "1:1048076810490:web:1a237d5f5a358dc78ab143",
-  measurementId: "G-3K74L03CT5"
+  apiKey: "AIzaSyAirNto64jbzZSKca6hTyfBhbRhJnUXT0w",
+  authDomain: "dms-test-6ec95.firebaseapp.com",
+  projectId: "dms-test-6ec95",
+  storageBucket: "dms-test-6ec95.appspot.com",
+  messagingSenderId: "296317726939",
+  appId: "1:296317726939:web:0c1fcf1a4f1ba915dbdcfe",
+  measurementId: "G-ZKRXKLSDSY"
 };
 
 // Initialize Firebase

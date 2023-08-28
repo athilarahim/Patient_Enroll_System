@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "dental-practice-management"
-  }
+    "default": "dms-test-6ec95",
+    "dms-test": "dms-test-6ec95"
+  },
+  "targets": {},
+  "etags": {}
 }
