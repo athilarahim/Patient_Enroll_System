@@ -14,7 +14,6 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-//import SendIcon from '@mui/icons-material/Send';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
@@ -25,6 +24,7 @@ import { ToastContainer } from 'react-toastify';
 import firebase from "firebase/app";
 import "firebase/auth";
 import { useNavigate } from 'react-router-dom';
+import Allpatients from "./Allpatients";
 
 
 
@@ -36,8 +36,7 @@ function App() {
   const [gender, setGender] = useState('');
   const [phone,setPhone] = useState();
 
-  const [patientdata,setPatientdata] = useState();
-  const [allpatients,setAllPatientdata] = useState('');
+  const [patientdata,setPatientdata] = useState([]);
   const [opsearch,setOpsearch] = useState('');
   const [namesearch,setNamesearch] = useState('');
   const [phonesearch,setPhonesearch] = useState('');
@@ -46,21 +45,23 @@ function App() {
 
   const { firebaseConf, firestore } = firebaseExports;
 
+  //fetching firestore database
+  const db = firestore.collection('patientlist');  //change firestore DB name here
+ 
 
   useEffect(() => {
-   firestore
-  .collection('patientlist')
-  .get()
-  .then((querySnapshot) => {
-    const documents = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      data: doc.data(),
-    }));
-    setAllPatientdata( documents );
-  });
- 
-}, [])
-
+    
+    db.orderBy('op_no')
+    .get()
+    .then((querySnapshot) => {
+      const documents = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        data: doc.data(),
+      }));
+      setPatientdata( documents );
+    });
+   
+  }, [])
 
 ///////////logout///////////////
 const navigate = useNavigate();
@@ -76,6 +77,9 @@ const navigate = useNavigate();
   };
 
   ////////////logout/////////////
+
+
+
   const AddPatients = async (e) =>{
        e.preventDefault();
        if(!op || !name || !age || !gender || !phone){
@@ -84,7 +88,7 @@ const navigate = useNavigate();
        else{ 
         setErrortext("");
        try{
-       await firestore.collection('patientlist').add({
+       await db.add({
         op_no: op,
         name: name.toLowerCase(),
         age: age,
@@ -106,11 +110,10 @@ const navigate = useNavigate();
   }
 
   const searchByop = async () =>{
-  
+    
       try {
-        const querySnapshot = await firestore
-          .collection('patientlist')
-          .where('op_no', '==' ,opsearch)
+        const querySnapshot = await 
+          db.where('op_no', '==' ,opsearch)
           .get();
 
           const results = [];
@@ -126,16 +129,15 @@ const navigate = useNavigate();
 
 
   const searchByname = async () =>{
+    
     try {
-      const querySnapshot = await firestore
-        .collection('patientlist')
-        .where('name', '>=', namesearch.toLowerCase())
+      const querySnapshot = await
+        db.where('name', '>=', namesearch.toLowerCase())
         .where('name', '<=', namesearch.toLowerCase() + '\uf8ff')
         .get();
 
         const results = [];
         querySnapshot.forEach((doc) => {
-          //console.log(doc.id);
         results.push({data:doc.data(),id:doc.id});
       });
 
@@ -146,10 +148,10 @@ const navigate = useNavigate();
   }
 
   const searchByphone = async () =>{
+    
     try {
-      const querySnapshot = await firestore
-        .collection('patientlist')
-        .where('phone', '==' ,phonesearch)
+      const querySnapshot = await 
+        db.where('phone', '==' ,phonesearch)
         .get();
 
         const results = [];
@@ -164,9 +166,8 @@ const navigate = useNavigate();
   }
 
   const deleteDocument = async (documentId) =>{
-   await firestore
-    .collection('patientlist')
-    .doc(documentId)
+   await 
+    db.doc(documentId)
     .delete()
     .then(() => {
       console.log('Document successfully deleted!',documentId);
@@ -175,6 +176,25 @@ const navigate = useNavigate();
   
   }
   
+  //Pagination content//////////////////////////////////////////
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Calculate the index of the first and last items 
+  const indexOfLastItem = currentPage * 3;
+  const indexOfFirstItem = indexOfLastItem - 3;
+
+  // Get the current page's items
+  let currentItems = []; 
+  currentItems = patientdata.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Change page
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
+  ////Pagination content////////////////////////////////////
+
+
 
 
   return (
@@ -220,12 +240,16 @@ const navigate = useNavigate();
        </Paper>
       </div>
       <div className="column-two">
-        <div className="viewall-patients">
-        {/* <Button variant="contained" endIcon={<SendIcon />} onClick={()=>setOpen(true)}>
+        {/* <div className="viewall-patients">
+        <Button variant="contained" onClick={()=>setOpen(true)}>
           View all patients
-        </Button> */}
-        </div>
-        <div className="modal">
+        </Button> 
+        </div> */}
+      <div className="viewall-patients">
+      <Allpatients />
+      </div>
+
+        {/* <div className="modal">
         <Modal className="modalOverlay"
         
         open={open}
@@ -233,49 +257,16 @@ const navigate = useNavigate();
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description">
         <Box className="modal-box">
-          <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-          <div className="content-display">
-      {allpatients ? (
-        <TableContainer component={Paper}  >
-        <Table sx={{ minWidth: 680 }} aria-label="simple table">
-        <TextField value={namesearch} onChange={(e)=>setNamesearch(e.target.value)} id="filled-basic" label="Search Name" variant="outlined" />
-        &nbsp;<Button sx={{ minHeight:56 }} onClick={searchByname} variant="outlined">Go</Button>
-          <TableHead>
-            <TableRow>
-              <TableCell>OP Number</TableCell>
-              <TableCell align="right">Patient Name</TableCell>
-              <TableCell align="right">Age</TableCell>
-              <TableCell align="right">Gender</TableCell>
-              <TableCell align="right">Phone</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody className="modalcontent">
-            {allpatients.map((row) => (
-              <TableRow
-                key={row.id}
-                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-              >
-                <TableCell component="th" scope="row">
-                  {row.data.op_no}
-                </TableCell>
-                <TableCell align="right">{row.data.name.toUpperCase()}</TableCell>
-                <TableCell align="right">{row.data.age}</TableCell>
-                <TableCell align="right">{row.data.gender}</TableCell>
-                <TableCell align="right">{row.data.phone}</TableCell>
-    
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      ) : (
-        null
-      )}
-      </div>
+          <button style={{marginLeft: 1190}} onClick={()=>setOpen(false)}>x</button>
+          <Typography id="modal-modal-description" sx={{ mt: 2, mr: 1 }}>
+          <div className="content-display-modal">
+        
+
+          </div>
           </Typography>
         </Box>
       </Modal>
-        </div>
+        </div> */}
         <div className="searching">
 
       <TextField value={opsearch} onChange={(e)=>setOpsearch(e.target.value)} id="filled-basic" label="Search OP" variant="filled" />
@@ -289,21 +280,21 @@ const navigate = useNavigate();
 
       </div>
       <div className="content-display">
-      {patientdata ? (
+      {(patientdata.length !== 0) ? (
         <TableContainer component={Paper}>
         <Table sx={{ minWidth: 680 }} aria-label="simple table">
           <TableHead>
             <TableRow>
               <TableCell>OP Number</TableCell>
-              <TableCell align="right">Patient Name</TableCell>
-              <TableCell align="right">Age</TableCell>
-              <TableCell align="right">Gender</TableCell>
-              <TableCell align="right">Phone</TableCell>
-              <TableCell align="right"></TableCell>
+              <TableCell align="left">Patient Name</TableCell>
+              <TableCell align="left">Age</TableCell>
+              <TableCell align="left">Gender</TableCell>
+              <TableCell align="left">Phone</TableCell>
+              <TableCell align="left"></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {patientdata.map((row) => (
+            {currentItems.map((row) => (
               
               <TableRow
                 key={row.id}
@@ -313,25 +304,48 @@ const navigate = useNavigate();
                 <TableCell component="th" scope="row">
                   {row.data.op_no}
                 </TableCell>
-                <TableCell align="right">{row.data.name.toUpperCase()}</TableCell>
-                <TableCell align="right">{row.data.age}</TableCell>
-                <TableCell align="right">{row.data.gender}</TableCell>
-                <TableCell align="right">{row.data.phone}</TableCell>
-      <TableCell align="right"><Button onClick={()=>deleteDocument(row.id).then(toast.success("Deleted successfully!"))} variant="outlined">Delete</Button></TableCell>
+                <TableCell align="left">{row.data.name.toUpperCase()}</TableCell>
+                <TableCell align="left">{row.data.age}</TableCell>
+                <TableCell align="left">{row.data.gender}</TableCell>
+                <TableCell align="left">{row.data.phone}</TableCell>
+      <TableCell align="left"><Button onClick={()=>deleteDocument(row.id).then(toast.success("Deleted successfully!"))} variant="outlined">Delete</Button></TableCell>
 
               </TableRow>
             ))}
           </TableBody>
         </Table>
-      </TableContainer>
+        <div>
+        <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
+          Previous
+        </Button> 
+        <button className="btn-page" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>{currentPage-1}</button>     
+        <button className="btn-page" style={{ backgroundColor: "lightblue"}}>{currentPage}</button>  
+        <button className="btn-page" onClick={() => handlePageChange(currentPage +1)}  disabled={indexOfLastItem >= patientdata.length}>{currentPage+1}</button>
+       
+        <Button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={indexOfLastItem >= patientdata.length}
+        >
+          Next
+        </Button>
+      </div>
+      </TableContainer> 
+      
       ) : (
-        null
+        
+        <TableContainer component={Paper} className="no-record">
+        <Table sx={{ minWidth: 680, minHeight: 155 }} aria-label="simple table">
+         <TableBody>
+          <TableCell align="center" style={{fontSize: 15, color: "grey", fontWeight: "bold"}}>No record found :|</TableCell>
+         </TableBody>
+        </Table>
+        </TableContainer>
       )}
       </div>
       </div>
       </div>
-
     </div>
+    
   );
       }
 
