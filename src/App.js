@@ -79,7 +79,6 @@ const navigate = useNavigate();
   ////////////logout/////////////
 
 
-
   const AddPatients = async (e) =>{
        e.preventDefault();
        if(!op || !name || !age || !gender || !phone){
@@ -347,7 +346,7 @@ const navigate = useNavigate();
     </div>
     
   );
-      }
+}
 
 export default App;
 

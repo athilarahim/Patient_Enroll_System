@@ -170,6 +170,33 @@ width: 35%;
   } */
 
 
+@media only screen and (max-width: 500px) {
+    .row{
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .column-one{
+        padding: 5px;
+        width: 100%;
+    }
+    .column-two{
+        padding: 5px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
 
+    .searching{
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ageandgender{
+        display: flex;
+        flex-direction: column;
+    }
+
+  }
 
 
